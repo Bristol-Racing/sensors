@@ -14,10 +14,11 @@ namespace Sensor {
 
         Sensor** sensors;
         int* nextTicks;
-        int nextRead;
+        int* nextReads;
         double* readings;
 
-        int readRate;
+        int reportRate;
+        int nextReport;
 
         unsigned long prevTime;
 
@@ -28,6 +29,7 @@ namespace Sensor {
         void updateTimes();
         void processTicks();
         void processReads();
+        void processReports();
 
     public:
         SensorManager(int maxSensors, int rate = -1);
@@ -39,18 +41,20 @@ namespace Sensor {
         void spin(int maxTime = -1);
         int timeToNextTick();
         int timeToNextRead();
+
+        double getLastRead(Sensor* sensor);
     };
     
-    SensorManager::SensorManager(int maxSensors, int rate = -1) {
+    SensorManager::SensorManager(int maxSensors, int rate) {
         sensorCount = 0;
         maxSensorCount = maxSensors;
 
         sensors = (Sensor**)malloc(sizeof(Sensor*) * maxSensors);
         nextTicks = (int*)malloc(sizeof(int) * maxSensors);
+        nextReads = (int*)malloc(sizeof(int) * maxSensors);
         readings = (double*)malloc(sizeof(double) * maxSensors);
 
-        readRate = rate;
-        nextRead = readRate;
+        reportRate = rate;
 
         prevTime = millis();
 
@@ -72,9 +76,10 @@ namespace Sensor {
 
         for (int i = 0; i < sensorCount; i++) {
             nextTicks[i] -= timeDelta;
+            nextReads[i] -= timeDelta;
         }
 
-        nextRead -= timeDelta;
+        nextReport -= timeDelta;
 
         spinTime -= timeDelta;
     }
@@ -89,11 +94,17 @@ namespace Sensor {
     }
 
     void SensorManager::processReads() {
-        while (nextRead <= 0) {
-            for (int i = 0; i < sensorCount; i++) {
+        for (int i = 0; i < sensorCount; i++) {
+            while (nextReads[i] <= 0) {
                 readings[i] = sensors[i]->read();
+                nextTicks[i] += sensors[i]->getTickRate();
             }
-            nextRead += readRate;
+        }
+    }
+
+    void SensorManager::processReports() {
+        while (nextReport <= 0) {
+            nextReport += reportRate;
 
             readCallback(readings);
         }
@@ -106,19 +117,6 @@ namespace Sensor {
     }
 
     void SensorManager::addSensor(Sensor* sensor) {
-        if (readRate == -1) {
-            readRate = sensor->getReadRate();
-            nextRead = readRate;
-        }
-        else {
-            if (sensor->getReadRate() >= 1) {
-                CHECK(sensor->getReadRate() == readRate, "Sensor read rate doens't match manager read rate.")
-            }
-            else {
-                sensor->setReadRate(readRate);
-            }
-        }
-
         sensors[sensorCount] = sensor;
         nextTicks[sensorCount] = sensor->getTickRate();
 
@@ -131,8 +129,12 @@ namespace Sensor {
 
         while (spinTime > 0 || maxTime == -1) {
             int minTime = timeToNextTick();
+            int nextRead = timeToNextRead();
             if (nextRead < minTime) {
                 minTime = nextRead;
+            }
+            if (nextReport < minTime) {
+                minTime = nextReport;
             }
             if (maxTime >= 0 && spinTime < minTime) {
                 minTime = spinTime;
@@ -166,7 +168,28 @@ namespace Sensor {
     }
 
     int SensorManager::timeToNextRead() {
-        return nextRead;
+        if (sensorCount == 0) return 1000;
+
+        int minTime = nextReads[0];
+
+        for (int i = 1; i < sensorCount; i++) {
+            if (sensors[i]->getReadRate() > 0) {
+                if (nextReads[i] < minTime) {
+                    minTime = nextReads[i];
+                }
+            }
+        }
+
+        return minTime;
+    }
+
+    double SensorManager::getLastRead(Sensor* sensor) {
+        for (int i = 1; i < sensorCount; i++) {
+            if (sensors[i] == sensor) {
+                return readings[i];
+            }
+        }
+        RAISE("Sensor not found.");
     }
 }
 
