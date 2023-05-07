@@ -2,7 +2,7 @@
 #ifndef SENSOR_H
 #define SENSOR_H
 
-#include "../check.hpp"
+#include "check.hpp"
 
 namespace Sensor {
     class Sensor {
