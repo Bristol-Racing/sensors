@@ -55,6 +55,7 @@ namespace Sensor {
         readings = (double*)malloc(sizeof(double) * maxSensors);
 
         reportRate = rate;
+        nextReport = reportRate;
 
         prevTime = millis();
 
@@ -66,6 +67,8 @@ namespace Sensor {
     SensorManager::~SensorManager() {
         free(sensors);
         free(nextTicks);
+        free(nextReads);
+        free(readings);
     }
 
     void SensorManager::updateTimes() {
@@ -97,7 +100,7 @@ namespace Sensor {
         for (int i = 0; i < sensorCount; i++) {
             while (nextReads[i] <= 0) {
                 readings[i] = sensors[i]->read();
-                nextTicks[i] += sensors[i]->getTickRate();
+                nextReads[i] += sensors[i]->getReadRate();
             }
         }
     }
@@ -119,6 +122,7 @@ namespace Sensor {
     void SensorManager::addSensor(Sensor* sensor) {
         sensors[sensorCount] = sensor;
         nextTicks[sensorCount] = sensor->getTickRate();
+        nextReads[sensorCount] = sensor->getReadRate();
 
         sensorCount++;
     }
@@ -130,6 +134,7 @@ namespace Sensor {
         while (spinTime > 0 || maxTime == -1) {
             int minTime = timeToNextTick();
             int nextRead = timeToNextRead();
+
             if (nextRead < minTime) {
                 minTime = nextRead;
             }
@@ -147,6 +152,7 @@ namespace Sensor {
 
             processTicks();
             processReads();
+            processReports();
         }
         
     }
@@ -184,7 +190,7 @@ namespace Sensor {
     }
 
     double SensorManager::getLastRead(Sensor* sensor) {
-        for (int i = 1; i < sensorCount; i++) {
+        for (int i = 0; i < sensorCount; i++) {
             if (sensors[i] == sensor) {
                 return readings[i];
             }
