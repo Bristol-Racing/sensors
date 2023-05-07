@@ -10,14 +10,14 @@ namespace Sensor {
     private:
         double count;
     public:
-        CounterSensor(uint8_t pin);
+        CounterSensor();
         ~CounterSensor();
 
         void tick();
         double read();
     };
 
-    CounterSensor::CounterSensor(uint8_t pin) {
+    CounterSensor::CounterSensor() {
         count = 0;
     }
 
