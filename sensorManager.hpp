@@ -7,6 +7,50 @@
 namespace Sensor {
     typedef void (* ReadCallback)(double*); 
 
+    class CPUMonitor : public Sensor {
+    private:
+        long totalWaitTime;
+        unsigned long prevTime;
+    public:
+        CPUMonitor();
+        ~CPUMonitor();
+
+        void tick();
+        double read();
+
+        void addWait(int time);
+    };
+
+    CPUMonitor::CPUMonitor() {
+        totalWaitTime = 0;
+        prevTime = millis();
+    }
+
+    CPUMonitor::~CPUMonitor() {
+
+    }
+
+    void CPUMonitor::tick() {
+
+    }
+
+    double CPUMonitor::read() {
+        unsigned long time = millis();
+        long timeDelta = time - prevTime;
+
+        prevTime = time;
+
+        double utilisation = (double)(timeDelta - totalWaitTime) / timeDelta;
+
+        totalWaitTime = 0;
+
+        return utilisation;
+    }
+
+    void CPUMonitor::addWait(int time) {
+        totalWaitTime += time;
+    }
+
     class SensorManager {
     private:
         int sensorCount;
@@ -26,13 +70,17 @@ namespace Sensor {
 
         ReadCallback readCallback;
 
+        int sleepTime = 0;
+
+        CPUMonitor monitor;
+
         void updateTimes();
         void processTicks();
         void processReads();
         void processReports();
 
     public:
-        SensorManager(int maxSensors, int rate = -1);
+        SensorManager(int maxSensors, int rate);
         ~SensorManager();
 
         void setReadCallback(ReadCallback callback);
@@ -43,6 +91,8 @@ namespace Sensor {
         int timeToNextRead();
 
         double getLastRead(Sensor* sensor);
+
+        CPUMonitor* getMonitor();
     };
     
     SensorManager::SensorManager(int maxSensors, int rate) {
@@ -62,6 +112,8 @@ namespace Sensor {
         spinTime = 0;
 
         readCallback = NULL;
+
+        monitor.setReadRate(reportRate);
     }
     
     SensorManager::~SensorManager() {
@@ -74,6 +126,9 @@ namespace Sensor {
     void SensorManager::updateTimes() {
         unsigned long time = millis();
         int timeDelta = time - prevTime;
+
+        // Serial.println(sleepTime);
+        // Serial.println((double)sleepTime / timeDelta);
 
         prevTime = time;
 
@@ -89,25 +144,25 @@ namespace Sensor {
 
     void SensorManager::processTicks() {
         for (int i = 0; i < sensorCount; i++) {
-            while (nextTicks[i] <= 0) {
+            if (nextTicks[i] <= 0) {
                 sensors[i]->tick();
-                nextTicks[i] += sensors[i]->getTickRate();
+                nextTicks[i] = sensors[i]->getTickRate();
             }
         }
     }
 
     void SensorManager::processReads() {
         for (int i = 0; i < sensorCount; i++) {
-            while (nextReads[i] <= 0) {
+            if (nextReads[i] <= 0) {
                 readings[i] = sensors[i]->read();
-                nextReads[i] += sensors[i]->getReadRate();
+                nextReads[i] = sensors[i]->getReadRate();
             }
         }
     }
 
     void SensorManager::processReports() {
-        while (nextReport <= 0) {
-            nextReport += reportRate;
+        if (nextReport <= 0) {
+            nextReport = reportRate;
 
             readCallback(readings);
         }
@@ -145,8 +200,12 @@ namespace Sensor {
                 minTime = spinTime;
             }
 
+            // Serial.print("minTime: ");
+            // Serial.println(minTime);
+
             if (minTime >= 1) {
                 delay(minTime);
+                monitor.addWait(minTime);
                 updateTimes();
             }
 
@@ -158,13 +217,12 @@ namespace Sensor {
     }
 
     int SensorManager::timeToNextTick() {
-        if (sensorCount == 0) return 1000;
+        int minTime = 1000;
+        bool found = false;
 
-        int minTime = nextTicks[0];
-
-        for (int i = 1; i < sensorCount; i++) {
+        for (int i = 0; i < sensorCount; i++) {
             if (sensors[i]->getTickRate() > 0) {
-                if (nextTicks[i] < minTime) {
+                if (!found || nextTicks[i] < minTime) {
                     minTime = nextTicks[i];
                 }
             }
@@ -196,6 +254,10 @@ namespace Sensor {
             }
         }
         RAISE("Sensor not found.");
+    }
+
+    CPUMonitor* SensorManager::getMonitor() {
+        return &monitor;
     }
 }
 
