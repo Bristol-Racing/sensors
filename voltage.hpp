@@ -16,7 +16,7 @@ namespace Sensor {
         ~VoltageSensor();
 
         void tick();
-        double read();
+        float read();
     };
 
     VoltageSensor::VoltageSensor(uint8_t pin, float rPositive, float rNegative) {
@@ -34,7 +34,7 @@ namespace Sensor {
 
     }
 
-    double VoltageSensor::read() {
+    float VoltageSensor::read() {
         float readVoltage = (5.0 / 1023.0) * analogRead(vin);// Read the voltage from sensor
         float voltage = ((rPlus + rMinus) / rMinus) * readVoltage;
 

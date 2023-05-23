@@ -14,7 +14,7 @@ namespace Sensor {
         ~Sensor() {}
 
         virtual void tick() = 0;
-        virtual double read() = 0;
+        virtual float read() = 0;
 
         void setTickRate(int tickRate);
         int getTickRate();

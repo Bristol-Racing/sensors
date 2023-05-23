@@ -5,7 +5,7 @@
 #include "sensor.hpp"
 
 namespace Sensor {
-    typedef void (* ReadCallback)(double*); 
+    typedef void (* ReadCallback)(float*); 
 
     class CPUMonitor : public Sensor {
     private:
@@ -16,7 +16,7 @@ namespace Sensor {
         ~CPUMonitor();
 
         void tick();
-        double read();
+        float read();
 
         void addWait(int time);
     };
@@ -34,13 +34,13 @@ namespace Sensor {
 
     }
 
-    double CPUMonitor::read() {
+    float CPUMonitor::read() {
         unsigned long time = millis();
         long timeDelta = time - prevTime;
 
         prevTime = time;
 
-        double utilisation = (double)(timeDelta - totalWaitTime) / timeDelta;
+        float utilisation = (float)(timeDelta - totalWaitTime) / timeDelta;
 
         totalWaitTime = 0;
 
@@ -59,7 +59,7 @@ namespace Sensor {
         Sensor** sensors;
         int* nextTicks;
         int* nextReads;
-        double* readings;
+        float* readings;
 
         int reportRate;
         int nextReport;
@@ -90,7 +90,7 @@ namespace Sensor {
         int timeToNextTick();
         int timeToNextRead();
 
-        double getLastRead(Sensor* sensor);
+        float getLastRead(Sensor* sensor);
 
         CPUMonitor* getMonitor();
     };
@@ -102,7 +102,7 @@ namespace Sensor {
         sensors = (Sensor**)malloc(sizeof(Sensor*) * maxSensors);
         nextTicks = (int*)malloc(sizeof(int) * maxSensors);
         nextReads = (int*)malloc(sizeof(int) * maxSensors);
-        readings = (double*)malloc(sizeof(double) * maxSensors);
+        readings = (float*)malloc(sizeof(float) * maxSensors);
 
         reportRate = rate;
         nextReport = reportRate;
@@ -128,7 +128,7 @@ namespace Sensor {
         int timeDelta = time - prevTime;
 
         // Serial.println(sleepTime);
-        // Serial.println((double)sleepTime / timeDelta);
+        // Serial.println((float)sleepTime / timeDelta);
 
         prevTime = time;
 
@@ -247,7 +247,7 @@ namespace Sensor {
         return minTime;
     }
 
-    double SensorManager::getLastRead(Sensor* sensor) {
+    float SensorManager::getLastRead(Sensor* sensor) {
         for (int i = 0; i < sensorCount; i++) {
             if (sensors[i] == sensor) {
                 return readings[i];

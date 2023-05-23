@@ -8,13 +8,13 @@
 namespace Sensor {
     class CounterSensor : public Sensor {
     private:
-        double count;
+        float count;
     public:
         CounterSensor();
         ~CounterSensor();
 
         void tick();
-        double read();
+        float read();
     };
 
     CounterSensor::CounterSensor() {
@@ -29,7 +29,7 @@ namespace Sensor {
 
     }
 
-    double CounterSensor::read() {
+    float CounterSensor::read() {
         count++;
         return count;
     }

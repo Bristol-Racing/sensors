@@ -23,7 +23,7 @@ namespace Sensor {
         ~CurrentSensor();
 
         void tick();
-        double read();
+        float read();
     };
 
     CurrentSensor::CurrentSensor(uint8_t pin) {
@@ -43,12 +43,12 @@ namespace Sensor {
         readings++;
     }
 
-    double CurrentSensor::read() {
+    float CurrentSensor::read() {
         //Robojax.com ACS758 Current Sensor 
-        double average = (double)totalReading / (double)readings;
-        double voltage = (5.0 / 1023.0) * (double)average;// Read the voltage from sensor
-        // double a = voltage - (vcc * 0.5) + 0.007;// 0.007 is a value to make voltage zero when there is no current
-        // double current = voltage / a;
+        float average = (float)totalReading / (float)readings;
+        float voltage = (5.0 / 1023.0) * (float)average;// Read the voltage from sensor
+        // float a = voltage - (vcc * 0.5) + 0.007;// 0.007 is a value to make voltage zero when there is no current
+        // float current = voltage / a;
 
         totalReading = 0;
         readings = 0;

@@ -6,7 +6,7 @@
 #include "sensor.hpp"
 
 namespace Sensor {
-    typedef void (* ThrottleCallback)(double); 
+    typedef void (* ThrottleCallback)(float); 
 
     class Throttle : public Sensor {
     private:
@@ -21,7 +21,7 @@ namespace Sensor {
         ~Throttle();
 
         void tick();
-        double read();
+        float read();
     };
 
     Throttle::Throttle(uint8_t pin, ThrottleCallback callback) {
@@ -43,9 +43,9 @@ namespace Sensor {
         readings++;
     }
 
-    double Throttle::read() {
-        double average = (double)totalReading / (double)readings;
-        double voltage = (5.0 / 1023.0) * (double)average;// Read the voltage from sensor
+    float Throttle::read() {
+        float average = (float)totalReading / (float)readings;
+        float voltage = (5.0 / 1023.0) * (float)average;// Read the voltage from sensor
 
         totalReading = 0;
         readings = 0;
