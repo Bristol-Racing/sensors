@@ -14,17 +14,17 @@ namespace Sensor {
         long totalReading;
         int readings;
 
-        float length;
+        double length;
 
     public:
-        LoadCell(int dout, int sck, float armLength);
+        LoadCell(int dout, int sck, double armLength);
         ~LoadCell();
 
         void tick();
-        float read();
+        double read();
     };
 
-    LoadCell::LoadCell(int dout, int sck, float armLength) {
+    LoadCell::LoadCell(int dout, int sck, double armLength) {
         totalReading = 0;
         readings = 0;
         scale.begin(dout, sck);
@@ -43,11 +43,11 @@ namespace Sensor {
         }
     }
 
-    float LoadCell::read() {
+    double LoadCell::read() {
         long average = totalReading / readings;
-        float weight = 0.0022 * (float)average + 147.39;  //  grams
-        float force = (weight / 1000.0) * 9.8066500286389; //  newtons
-        float torque = force * length;                     //  newton-meters
+        double weight = 0.0022 * (double)average + 147.39;  //  grams
+        double force = (weight / 1000.0) * 9.8066500286389; //  newtons
+        double torque = force * length;                     //  newton-meters
         
         totalReading = 0;
         readings = 0;

@@ -9,17 +9,17 @@ namespace Sensor {
     class VoltageSensor : public Sensor {
     private:
         uint8_t vin;
-        float rPlus;
-        float rMinus;
+        double rPlus;
+        double rMinus;
     public:
-        VoltageSensor(uint8_t pin, float rPositive, float rNegative);
+        VoltageSensor(uint8_t pin, double rPositive, double rNegative);
         ~VoltageSensor();
 
         void tick();
-        float read();
+        double read();
     };
 
-    VoltageSensor::VoltageSensor(uint8_t pin, float rPositive, float rNegative) {
+    VoltageSensor::VoltageSensor(uint8_t pin, double rPositive, double rNegative) {
         vin = pin;
         rPlus = rPositive;
         rMinus = rNegative;
@@ -34,9 +34,9 @@ namespace Sensor {
 
     }
 
-    float VoltageSensor::read() {
-        float readVoltage = (5.0 / 1023.0) * analogRead(vin);// Read the voltage from sensor
-        float voltage = ((rPlus + rMinus) / rMinus) * readVoltage;
+    double VoltageSensor::read() {
+        double readVoltage = (5.0 / 1023.0) * analogRead(vin);// Read the voltage from sensor
+        double voltage = ((rPlus + rMinus) / rMinus) * readVoltage;
 
         return voltage;
     }

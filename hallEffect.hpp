@@ -27,7 +27,7 @@ namespace Sensor {
         ~HallEffect();
 
         void tick();
-        float read();
+        double read();
     };
 
     HallEffect::HallEffect() {
@@ -56,13 +56,13 @@ namespace Sensor {
         // currentTime += 1.0 / 1000.0;
     }
 
-    float HallEffect::read() {
+    double HallEffect::read() {
         unsigned long currentTime = millis();
         int timeDelta = currentTime - prevTime;
 
-        float time = (float)timeDelta / 1000.0;
+        double time = (double)timeDelta / 1000.0;
 
-        float rpm = ((float)ticks / (float)ticksPerRev) / (time / 60.0);
+        double rpm = ((double)ticks / (double)ticksPerRev) / (time / 60.0);
 
         prevTime = currentTime;
         ticks = 0;
