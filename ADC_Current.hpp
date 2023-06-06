@@ -52,7 +52,7 @@ namespace Sensor {
     void CurrentSensor::tick() {
         int16_t results;
 
-        results = -ads1115.readADC_Differential_0_1();
+        results = ads1115.readADC_Differential_0_1();
         totalReading += results;
         readings++;
     }
