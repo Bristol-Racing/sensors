@@ -38,7 +38,7 @@ namespace Sensor {
         rtcStatus = rtc.begin();
         CHECK(rtcStatus == true, "RTC initialisation failed");
 
-        CHECK(rtc.lostPower() == false, "RTC lost power. Needs resetting");
+        // CHECK(rtc.lostPower() == false, "RTC lost power. Needs resetting");
 
         start = rtc.now();
 

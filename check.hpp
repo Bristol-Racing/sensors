@@ -1,6 +1,31 @@
 #ifndef CHECK_H
 #define CHECK_H
 
+
+class ErrorLog {
+private:
+    char ** messages;
+public:
+    ErrorLog();
+    ~ErrorLog();
+
+    void raise(char* message);
+};
+
+ErrorLog::ErrorLog() {
+
+}
+
+ErrorLog::~ErrorLog() {
+
+}
+
+void ErrorLog::raise(char* message) {
+
+}
+
+ErrorLog errorLog;
+
 #define CHECK(cond, message)    \
     {                           \
         if (!(cond)) {          \
