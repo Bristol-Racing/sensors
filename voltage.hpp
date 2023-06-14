@@ -38,7 +38,7 @@ namespace Sensor {
         // double readVoltage = (5.0 / 1023.0) * analogRead(vin);// Read the voltage from sensor
         // double voltage = ((rPlus + rMinus) / rMinus) * readVoltage;
 
-        double voltage = analogRead(vin) * gradient;
+        double voltage = (double)analogRead(vin) * gradient;
 
         return voltage;
     }
