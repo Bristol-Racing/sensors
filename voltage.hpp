@@ -11,18 +11,18 @@ namespace Sensor {
         uint8_t vin;
         double rPlus;
         double rMinus;
-        double divFactor;
+        double gradient;
     public:
-        VoltageSensor(uint8_t pin, double div);
+        VoltageSensor(uint8_t pin, double grad);
         ~VoltageSensor();
 
         void tick();
         double read();
     };
 
-    VoltageSensor::VoltageSensor(uint8_t pin, double div) {
+    VoltageSensor::VoltageSensor(uint8_t pin, double grad) {
         vin = pin;
-        divFactor = div;
+        gradient = grad;
         pinMode(pin, INPUT);
     }
 
@@ -38,7 +38,7 @@ namespace Sensor {
         // double readVoltage = (5.0 / 1023.0) * analogRead(vin);// Read the voltage from sensor
         // double voltage = ((rPlus + rMinus) / rMinus) * readVoltage;
 
-        double voltage = analogRead(vin) / divFactor;
+        double voltage = analogRead(vin) * gradient;
 
         return voltage;
     }
