@@ -90,6 +90,7 @@ namespace Sensor {
         int timeToNextTick();
         int timeToNextRead();
 
+        double getLastRead(int sensorIndex);
         double getLastRead(Sensor* sensor);
 
         CPUMonitor* getMonitor();
@@ -245,6 +246,10 @@ namespace Sensor {
         }
 
         return minTime;
+    }
+
+    double SensorManager::getLastRead(int sensorIndex) {
+        return readings[sensorIndex];
     }
 
     double SensorManager::getLastRead(Sensor* sensor) {
