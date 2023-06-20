@@ -41,10 +41,6 @@ namespace Sensor {
         // CHECK(rtc.lostPower() == false, "RTC lost power. Needs resetting");
 
         start = rtc.now();
-
-        TimeSpan offset(0, 1, 0, 0);
-
-        start = start - offset;
     }
 
     void Clock::tick() {
