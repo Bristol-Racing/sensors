@@ -17,8 +17,11 @@ namespace Sensor {
         long totalReading;
         int readings;
         Adafruit_ADS1115 ads1115;
+
+        double off;
+        double grad;
     public:
-        CurrentSensor();
+        CurrentSensor(double offset, double gradient);
         ~CurrentSensor();
 
         void setup();
@@ -27,9 +30,12 @@ namespace Sensor {
         double read();
     };
 
-    CurrentSensor::CurrentSensor() {
+    CurrentSensor::CurrentSensor(double offset, double gradient) {
         totalReading = 0;
         readings = 0;
+
+        off = offset;
+        grad = gradient;
     }
 
     CurrentSensor::~CurrentSensor() {
@@ -58,17 +64,13 @@ namespace Sensor {
     }
 
     double CurrentSensor::read() {
-        //Robojax.com ACS758 Current Sensor 
         double average = (double)totalReading / (double)readings;
-        // double voltage = (5.0 / 1023.0) * (double)average;// Read the voltage from sensor
-        // double a = voltage - (vcc * 0.5) + 0.007;// 0.007 is a value to make voltage zero when there is no current
-        // double current = voltage / a;
+        double current = off + grad * average;
 
         totalReading = 0;
         readings = 0;
 
-        // return current;
-        return average;
+        return current;
     }
 }
 
