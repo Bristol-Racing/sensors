@@ -1,4 +1,5 @@
 
+//  Not used
 
 #ifndef throttle_H
 #define throttle_H
@@ -21,7 +22,7 @@ namespace Sensor {
         ~Throttle();
 
         void tick();
-        double read();
+        double report();
     };
 
     Throttle::Throttle(uint8_t pin, ThrottleCallback callback) {
@@ -43,7 +44,7 @@ namespace Sensor {
         readings++;
     }
 
-    double Throttle::read() {
+    double Throttle::report() {
         double average = (double)totalReading / (double)readings;
         double voltage = (5.0 / 1023.0) * (double)average;// Read the voltage from sensor
 

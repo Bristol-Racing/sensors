@@ -14,7 +14,7 @@ namespace Sensor {
         ~CounterSensor();
 
         void tick();
-        double read();
+        double report();
     };
 
     CounterSensor::CounterSensor() {
@@ -29,7 +29,9 @@ namespace Sensor {
 
     }
 
-    double CounterSensor::read() {
+    double CounterSensor::report() {
+        //  Just counts up for every report
+
         count++;
         return count;
     }

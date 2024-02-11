@@ -1,4 +1,5 @@
 
+//  A header guard prevents the file from being included twice
 #ifndef SENSOR_H
 #define SENSOR_H
 
@@ -7,20 +8,23 @@
 namespace Sensor {
     class Sensor {
     private:
+        //  The rates in milliseconds at which the tick and report functions should be called
         int tickRate = -1;
-        int readRate = -1;
+        int reportRate = -1;
     public:
         Sensor() {}
         ~Sensor() {}
 
+        //  Tick and report are virtual, so they must be implemented by classes that inherit from sensor
         virtual void tick() = 0;
-        virtual double read() = 0;
+        virtual double report() = 0;
 
+        //  Get/set tick/report rate should be self explanitory 
         void setTickRate(int tickRate);
         int getTickRate();
 
-        void setReadRate(int readRate);
-        int getReadRate();
+        void setReportRate(int reportRate);
+        int getReportRate();
     };
 
     void Sensor::setTickRate(int newTickRate) {
@@ -34,15 +38,15 @@ namespace Sensor {
         return tickRate;
     }
 
-    void Sensor::setReadRate(int newReadRate) {
-        CHECK(newReadRate >= 1, "Read rate must be at least 1 millisecond")
-        CHECK(readRate == -1, "Read rate already set")
+    void Sensor::setReportRate(int newReportRate) {
+        CHECK(newReportRate >= 1, "Read rate must be at least 1 millisecond")
+        CHECK(reportRate == -1, "Read rate already set")
 
-        readRate = newReadRate;
+        reportRate = newReportRate;
     }
 
-    int Sensor::getReadRate() {
-        return readRate;
+    int Sensor::getReportRate() {
+        return reportRate;
     }
 }
 

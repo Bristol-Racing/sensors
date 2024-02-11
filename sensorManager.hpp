@@ -1,47 +1,59 @@
 
+//  A header guard prevents the file from being included twice
 #ifndef SENSOR_MANAGER_H
 #define SENSOR_MANAGER_H
 
 #include "sensor.hpp"
 
 namespace Sensor {
-    typedef void (* ReadCallback)(double*); 
+    //  Defines a report callback function type
+    typedef void (* ReportCallback)(double*); 
 
+    //  A sensor that keeps track of the CPU usage of the arduino
     class CPUMonitor : public Sensor {
     private:
-        long totalWaitTime;
-        unsigned long prevTime;
+        long totalWaitTime;     //  The total wait time since the last report
+        unsigned long prevTime; //  The time of the last report
     public:
-        CPUMonitor();
-        ~CPUMonitor();
+        CPUMonitor();   //  Called when a new sensor object is created
+        ~CPUMonitor();  //  Called when a sensor object is destroyed
 
-        void tick();
-        double read();
+        void tick();        //  Both called by the sensor manager
+        double report();
 
-        void addWait(int time);
+        void addWait(int time); //  Adds wait time, for CPU usage calcs
     };
 
     CPUMonitor::CPUMonitor() {
+        //  Resets the wait time
         totalWaitTime = 0;
+
+        //  Stores the current time
         prevTime = millis();
     }
 
     CPUMonitor::~CPUMonitor() {
-
+        //  Don't need to do anything when the object is destroyed
     }
 
     void CPUMonitor::tick() {
-
+        //  Don't need to do anything for ticks
     }
 
-    double CPUMonitor::read() {
+    double CPUMonitor::report() {
+        //  Called by the sensor manager whenever CPU usage should be reported
+
+        //  Calculate the time since the last report
         unsigned long time = millis();
         long timeDelta = time - prevTime;
 
+        //  Update the time
         prevTime = time;
 
+        //  Calculate the CPU utilisation (the amount of time not spent waiting)
         double utilisation = (double)(timeDelta - totalWaitTime) / timeDelta;
 
+        //  Reset the wait time
         totalWaitTime = 0;
 
         return utilisation;
@@ -51,178 +63,220 @@ namespace Sensor {
         totalWaitTime += time;
     }
 
+
     class SensorManager {
     private:
-        int sensorCount;
-        int maxSensorCount;
+        int sensorCount;    //  The number of sensors in use
+        int maxSensorCount; //  The max number of sensors in use
 
-        Sensor** sensors;
-        int* nextTicks;
-        int* nextReads;
-        double* readings;
+        Sensor** sensors;   //  An array of sensor objects
+        int* nextTicks;     //  The times for the next tick call on each sensor object
+        int* nextReports;   //  The times for the next report call on each sensor object
+        double* readings;   //  The last reading from each sensor
 
-        int reportRate;
-        int nextReport;
+        int callbackRate;   //  The rate at which the callback function should pass sensor readings back to the program
+        int nextCallback;   //  The time for the next callback
 
-        unsigned long prevTime;
+        unsigned long prevTime; //  The time of the last thing (tick, report, callback)
 
-        int spinTime;
+        int spinTime;   //  The time to run the sensor manager for
 
-        ReadCallback readCallback;
+        ReportCallback reportCallback;  //  The callback function that passes sensor readings back to the program
 
-        int sleepTime = 0;
-
-        CPUMonitor monitor;
+        CPUMonitor monitor;     //  The CPU monitor sensor
 
         void updateTimes();
         void processTicks();
-        void processReads();
         void processReports();
+        void processCallbacks();
 
     public:
         SensorManager(int maxSensors, int rate);
         ~SensorManager();
 
-        void setReadCallback(ReadCallback callback);
+        void setReportCallback(ReportCallback callback);
 
         void addSensor(Sensor* sensor);
         void spin(int maxTime = -1);
         int timeToNextTick();
-        int timeToNextRead();
+        int timeToNextReport();
 
-        double getLastRead(int sensorIndex);
-        double getLastRead(Sensor* sensor);
+        double getLastReport(int sensorIndex);
+        double getLastReport(Sensor* sensor);
 
         CPUMonitor* getMonitor();
     };
     
     SensorManager::SensorManager(int maxSensors, int rate) {
+        //  Sensor count starts at 0
         sensorCount = 0;
         maxSensorCount = maxSensors;
 
+        //  Allocates memory for arrays for the sensors
+        //  as well as the times and readings
         sensors = (Sensor**)malloc(sizeof(Sensor*) * maxSensors);
         nextTicks = (int*)malloc(sizeof(int) * maxSensors);
-        nextReads = (int*)malloc(sizeof(int) * maxSensors);
+        nextReports = (int*)malloc(sizeof(int) * maxSensors);
         readings = (double*)malloc(sizeof(double) * maxSensors);
 
-        reportRate = rate;
-        nextReport = reportRate;
+        //  Stores the callback rate
+        callbackRate = rate;
+        //  Resets the next callback time
+        nextCallback = callbackRate;
 
+        //  Stores the current time
         prevTime = millis();
 
         spinTime = 0;
+        reportCallback = NULL;
 
-        readCallback = NULL;
-
-        monitor.setReadRate(reportRate);
+        //  Sets the CPU monitor report rate to be the same as the callback rate
+        monitor.setReportRate(callbackRate);
     }
     
     SensorManager::~SensorManager() {
+        //  Free the memory for the arrays when the sensor manager is destroyed
         free(sensors);
         free(nextTicks);
-        free(nextReads);
+        free(nextReports);
         free(readings);
     }
 
     void SensorManager::updateTimes() {
+        //  Calculate the time since the last update
         unsigned long time = millis();
         int timeDelta = time - prevTime;
 
-        // Serial.println(sleepTime);
-        // Serial.println((double)sleepTime / timeDelta);
-
+        //  Update the time
         prevTime = time;
 
+        //  Subtract the elapsed time from all of the next tick/report times
         for (int i = 0; i < sensorCount; i++) {
             nextTicks[i] -= timeDelta;
-            nextReads[i] -= timeDelta;
+            nextReports[i] -= timeDelta;
         }
 
-        nextReport -= timeDelta;
+        //  Subtract the elapsed time from the next callback time
+        nextCallback -= timeDelta;
 
+        //  Subtract the elapsed time from the spin time
         spinTime -= timeDelta;
     }
 
     void SensorManager::processTicks() {
+        //  Go through each sensor
         for (int i = 0; i < sensorCount; i++) {
+            //  If the next tick time has elapsed
             if (nextTicks[i] <= 0) {
+                //  Call the tick method
                 sensors[i]->tick();
+                //  And reset the next tick time
                 nextTicks[i] = sensors[i]->getTickRate();
             }
         }
     }
 
-    void SensorManager::processReads() {
+    void SensorManager::processReports() {
+        //  Go through each sensor
         for (int i = 0; i < sensorCount; i++) {
-            if (nextReads[i] <= 0) {
-                readings[i] = sensors[i]->read();
-                nextReads[i] = sensors[i]->getReadRate();
+            //  If the next report time has elapsed
+            if (nextReports[i] <= 0) {
+                //  Call the report method and store the returned reading
+                readings[i] = sensors[i]->report();
+                //  And reset the next report time
+                nextReports[i] = sensors[i]->getReportRate();
             }
         }
     }
 
-    void SensorManager::processReports() {
-        if (nextReport <= 0) {
-            nextReport = reportRate;
+    void SensorManager::processCallbacks() {
+        //  If the next callback time has elapsed
+        if (nextCallback <= 0) {
+            //  reset the next callback time
+            nextCallback = callbackRate;
 
-            readCallback(readings);
+            //  And call the callback function with the array of sensor readings
+            //  to pass the readings back to the main program
+            reportCallback(readings);
         }
     }
     
-    void SensorManager::setReadCallback(ReadCallback callback) {
-        CHECK(readCallback == NULL, "Read callback already set")
+    void SensorManager::setReportCallback(ReportCallback callback) {
+        CHECK(reportCallback == NULL, "Report callback already set")
 
-        readCallback = callback;
+        reportCallback = callback;
     }
 
     void SensorManager::addSensor(Sensor* sensor) {
+        //  Adds the sensor to the sensors array
         sensors[sensorCount] = sensor;
+        //  And resets the next tick/report times for it
         nextTicks[sensorCount] = sensor->getTickRate();
-        nextReads[sensorCount] = sensor->getReadRate();
+        nextReports[sensorCount] = sensor->getReportRate();
 
+        //  Increments the sensor count
         sensorCount++;
     }
 
     void SensorManager::spin(int maxTime = -1) {
+        //  Updates the next everything times
         updateTimes();
+
+        //  Sets the spin time to the max time passed in to the spin function
+        //  spin time is ignored if -1 is passed in
         spinTime = maxTime;
 
+        //  Repeats as long as there is spin time remaining
+        //  or max time is -1
         while (spinTime > 0 || maxTime == -1) {
+            //  Finds the minimum time to the next tick/report/callback
             int minTime = timeToNextTick();
-            int nextRead = timeToNextRead();
 
-            if (nextRead < minTime) {
-                minTime = nextRead;
-            }
+            int nextReport = timeToNextReport();
             if (nextReport < minTime) {
                 minTime = nextReport;
             }
+
+            if (nextCallback < minTime) {
+                minTime = nextCallback;
+            }
+
             if (maxTime >= 0 && spinTime < minTime) {
                 minTime = spinTime;
             }
 
-            // Serial.print("minTime: ");
-            // Serial.println(minTime);
-
+            //  If the minimum time is greater than 0
             if (minTime >= 1) {
+                //  wait
                 delay(minTime);
+
+                //  Register the wait with the CPU monitor
                 monitor.addWait(minTime);
+
+                //  Update the next everything times
                 updateTimes();
             }
 
+            //  Process any ticks, reports, and callbacks that have happened
             processTicks();
-            processReads();
             processReports();
+            processCallbacks();
         }
         
     }
 
     int SensorManager::timeToNextTick() {
+        //  time is 1 sec by default
         int minTime = 1000;
+
+        //  Always set min time if this is the first sensor
         bool found = false;
 
+        //  Go through all the sensors
         for (int i = 0; i < sensorCount; i++) {
+            //  If the sensor has a tick rate
             if (sensors[i]->getTickRate() > 0) {
+                //  Set the min time if it is the first sensor or has a lower next tick time
                 if (!found || nextTicks[i] < minTime) {
                     minTime = nextTicks[i];
                 }
@@ -232,15 +286,20 @@ namespace Sensor {
         return minTime;
     }
 
-    int SensorManager::timeToNextRead() {
+    int SensorManager::timeToNextReport() {
+        //  time is 1 sec by default
         if (sensorCount == 0) return 1000;
 
-        int minTime = nextReads[0];
+        //  min time is time to first sensor report
+        int minTime = nextReports[0];
 
+        //  Go through all the other sensors
         for (int i = 1; i < sensorCount; i++) {
-            if (sensors[i]->getReadRate() > 0) {
-                if (nextReads[i] < minTime) {
-                    minTime = nextReads[i];
+            //  If the sensor has a report rate
+            if (sensors[i]->getReportRate() > 0) {
+                //  Set the min time if it has a lower next report time
+                if (nextReports[i] < minTime) {
+                    minTime = nextReports[i];
                 }
             }
         }
@@ -248,11 +307,13 @@ namespace Sensor {
         return minTime;
     }
 
-    double SensorManager::getLastRead(int sensorIndex) {
+    double SensorManager::getLastReport(int sensorIndex) {
+        //  Returns the last reading from the sensor
         return readings[sensorIndex];
     }
 
-    double SensorManager::getLastRead(Sensor* sensor) {
+    double SensorManager::getLastReport(Sensor* sensor) {
+        //  Finds the sensor and returns its last reading
         for (int i = 0; i < sensorCount; i++) {
             if (sensors[i] == sensor) {
                 return readings[i];
@@ -262,6 +323,7 @@ namespace Sensor {
     }
 
     CPUMonitor* SensorManager::getMonitor() {
+        //  Returns the CPU monitor sensor
         return &monitor;
     }
 }
