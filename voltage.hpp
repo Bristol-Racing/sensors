@@ -39,7 +39,9 @@ namespace Sensor {
         //  Called by the sensor manager whenever a reading should be reported
 
         //  Read from the input pin and calculate the voltage before the potential divider
-        double voltage = (double)analogRead(vin) * gradient;
+        double reading = (double)analogRead(vin);
+
+        double voltage = reading * (5.0/1023.0) * gradient;
 
         return voltage;
     }

@@ -7,7 +7,8 @@
 
 namespace Sensor {
     //  Defines a report callback function type
-    typedef void (* ReportCallback)(double*); 
+    typedef void (* ReportCallback)(double*);
+    typedef void (* SendLEDCommand) (int, int);
 
     //  A sensor that keeps track of the CPU usage of the arduino
     class CPUMonitor : public Sensor {
@@ -81,9 +82,18 @@ namespace Sensor {
 
         int spinTime;   //  The time to run the sensor manager for
 
+        int diagTimer = 0;
+        bool diagMode = 0;
+        int faultMode = sensorCount + 2;
+        int faultTimer = 0;
+
         ReportCallback reportCallback;  //  The callback function that passes sensor readings back to the program
+        SendLEDCommand sendLEDCommand;
 
         CPUMonitor monitor;     //  The CPU monitor sensor
+
+        void diagCheck();
+        void faultInject();
 
         void updateTimes();
         void processTicks();
@@ -106,7 +116,7 @@ namespace Sensor {
 
         CPUMonitor* getMonitor();
     };
-    
+
     SensorManager::SensorManager(int maxSensors, int rate) {
         //  Sensor count starts at 0
         sensorCount = 0;
@@ -133,7 +143,7 @@ namespace Sensor {
         //  Sets the CPU monitor report rate to be the same as the callback rate
         monitor.setReportRate(callbackRate);
     }
-    
+
     SensorManager::~SensorManager() {
         //  Free the memory for the arrays when the sensor manager is destroyed
         free(sensors);
@@ -189,18 +199,63 @@ namespace Sensor {
         }
     }
 
+
+
     void SensorManager::processCallbacks() {
         //  If the next callback time has elapsed
         if (nextCallback <= 0) {
             //  reset the next callback time
             nextCallback = callbackRate;
 
+            diagCheck();
+
+
+
             //  And call the callback function with the array of sensor readings
             //  to pass the readings back to the main program
+            if (diagMode) {
+                faultInject();
+            }
             reportCallback(readings);
         }
     }
-    
+
+    void SensorManager::diagCheck() {
+
+            double butOn = sensors[1]->report();
+
+            if (butOn >= 0.5) {
+                diagTimer++;
+            } else {
+                diagTimer = 0;
+            }
+
+
+            if (diagTimer >= 5) {
+                diagMode = diagMode ? 0 : 1;
+                faultMode = 2;
+                diagTimer = 0;
+            }
+
+    }
+
+    void SensorManager::faultInject() {
+
+        //Serial.println(faultTimer);
+        //Serial.println(faultMode);
+
+        readings[faultMode] = 666.6; // Inject a fault value of 666.6
+        faultTimer++;
+        if (faultTimer >= 5) {
+            if (faultMode >= sensorCount-1) {
+                faultMode = 2;
+            } else {
+                faultMode++;
+            }
+            faultTimer = 0;
+        }
+    }
+
     void SensorManager::setReportCallback(ReportCallback callback) {
         CHECK(reportCallback == NULL, "Report callback already set")
 
@@ -262,7 +317,7 @@ namespace Sensor {
             processReports();
             processCallbacks();
         }
-        
+
     }
 
     int SensorManager::timeToNextTick() {

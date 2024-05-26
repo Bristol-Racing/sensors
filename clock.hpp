@@ -1,13 +1,12 @@
-
 //  A header guard prevents the file from being included twice
-#ifndef clock_H
-#define clock_H
+#ifndef CLOCK_H
+#define CLOCK_H
 
 //  Include the parent sensor
 #include "sensor.hpp"
 
 //  Include the clock library
-#include <Wire.h> 
+#include <Wire.h>
 #include "RTClib.h"
 
 namespace Sensor {
@@ -17,13 +16,14 @@ namespace Sensor {
     private:
         RTC_DS3231 rtc; //  The real time clock object
         DateTime start; //  The time the clock was turned on
+
     public:
         Clock();    //  Called when a new sensor object is created
         ~Clock();   //  Called when a sensor object is destroyed
 
         void setup();   //  Connects to the RTC chip and sets it up
 
-        void tick();        //  Both called by the sensor manager
+        void tick();    //  Both called by the sensor manager
         double report();
     };
 
@@ -36,9 +36,9 @@ namespace Sensor {
     }
 
     void Clock::setup() {
-        //  Connect to the RTC chip and check it initialised correctly
+        //  Connect to the RTC chip and check it initialized correctly
         bool rtcStatus = rtc.begin();
-        CHECK(rtcStatus == true, "RTC initialisation failed");
+        CHECK(rtcStatus == true, "RTC initialization failed");
 
         //  Ignore lost power error
         // CHECK(rtc.lostPower() == false, "RTC lost power. Needs resetting");
@@ -60,8 +60,8 @@ namespace Sensor {
         //  Calculate time since start
         TimeSpan span = now - start;
 
-        //  Return time since start in seconds
         return span.totalseconds();
+
     }
 }
 
