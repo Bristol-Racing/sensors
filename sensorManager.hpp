@@ -225,7 +225,7 @@ namespace Sensor {
             //  If the minimum time is greater than 0
             if (minTime >= 1) {
                 delay(minTime); //  wait
-                monitor.addWait(minTime); //  Register the wait with the CPU monitor
+                //monitor.addWait(minTime); //  Register the wait with the CPU monitor
                 updateTimes(); //  Update the next everything times
             }
 
