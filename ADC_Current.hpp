@@ -16,7 +16,6 @@ namespace Sensor {
         double grad;        //  so accurate current readings can be calculated from the voltage it outputs
     public:
         CurrentSensor(uint8_t pin1, uint8_t pin2, double offset, double gradient);  //  Called when a new sensor object is created
-        CurrentSensor(uint8_t pin1, uint8_t pin2, double offset, double gradient);  //  Called when a new sensor object is created
         ~CurrentSensor();   //  Called when a sensor object is destroyed
         void setup();       //  Connects to the ADC chip and sets it up
         void tick();        //  Both called by the sensor manager

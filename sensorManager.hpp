@@ -34,8 +34,6 @@ namespace Sensor {
 
         ReportCallback reportCallback;  //  The callback function that passes sensor readings back to the program
         SendLEDCommand sendLEDCommand;
-        SendLEDCommand sendLEDCommand;
-
 
         void tempCheck(double*);
         void diagCheck();
