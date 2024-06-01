@@ -38,7 +38,6 @@ namespace Sensor {
         void tempCheck(double*);
         void diagCheck();
         void faultInject();
-
         void updateTimes();
         void processTicks();
         void processReports();
@@ -47,18 +46,14 @@ namespace Sensor {
     public:
         SensorManager(int maxSensors, int rate);
         ~SensorManager();
-
         void setReportCallback(ReportCallback callback);
         void setSendLEDCommand(SendLEDCommand command);
-
         void addSensor(Sensor* sensor);
         void spin(int maxTime = -1);
         int timeToNextTick();
         int timeToNextReport();
-
         double getLastReport(int sensorIndex);
         double getLastReport(Sensor* sensor);
-
     };
 
 
@@ -74,13 +69,10 @@ namespace Sensor {
         nextReports = (int*)malloc(sizeof(int) * maxSensors);
         readings = (double*)malloc(sizeof(double) * maxSensors);
 
-        //  Stores the callback rate
-        callbackRate = rate;
-        //  Resets the next callback time
-        nextCallback = callbackRate;
+        callbackRate = rate;            //  Stores the callback rate
+        nextCallback = callbackRate;    //  Resets the next callback time
 
-        //  Stores the current time
-        prevTime = millis();
+        prevTime = millis();            //  Stores the current time
 
         spinTime = 0;
         reportCallback = NULL;
@@ -150,8 +142,6 @@ namespace Sensor {
             tempCheck(readings);
             diagCheck();
 
-
-
             //  And call the callback function with the array of sensor readings
             //  to pass the readings back to the main program
             if (diagMode) {
@@ -191,7 +181,6 @@ namespace Sensor {
                 faultMode = 2;
                 diagTimer = 0;
             }
-
     }
 
     void SensorManager::faultInject() {
@@ -319,4 +308,3 @@ namespace Sensor {
 }
 
 #endif
-
