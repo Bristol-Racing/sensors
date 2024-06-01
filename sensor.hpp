@@ -17,11 +17,8 @@ namespace Sensor {
         //  Tick and report are virtual, so they must be implemented by classes that inherit from sensor
         virtual void tick() = 0;
         virtual double report() = 0;
-
-        //  Get/set tick/report rate should be self explanitory 
         void setTickRate(int tickRate);
         int getTickRate();
-
         void setReportRate(int reportRate);
         int getReportRate();
     };

@@ -12,49 +12,6 @@ namespace Sensor {
     typedef void (* ReportCallback)(double*);
     typedef void (* SendLEDCommand) (int, int);
 
-    //  A sensor that keeps track of the CPU usage of the arduino
-    class CPUMonitor : public Sensor {
-    private:
-        long totalWaitTime;     //  The total wait time since the last report
-        unsigned long prevTime; //  The time of the last report
-    public:
-        CPUMonitor();   //  Called when a new sensor object is created
-        ~CPUMonitor();  //  Called when a sensor object is destroyed
-        void tick();        //  Both called by the sensor manager
-        double report();
-        void addWait(int time); //  Adds wait time, for CPU usage calcs
-    };
-
-    CPUMonitor::CPUMonitor() {
-        totalWaitTime = 0; //  Resets the wait time
-        prevTime = millis(); //  Stores the current time
-    }
-
-    CPUMonitor::~CPUMonitor() {
-        //  Don't need to do anything when the object is destroyed
-    }
-
-    void CPUMonitor::tick() {
-        //  Don't need to do anything for ticks
-    }
-
-    double CPUMonitor::report() {
-        //  Called by the sensor manager whenever CPU usage should be reported
-        //  Calculate the time since the last report
-        unsigned long time = millis();
-        long timeDelta = time - prevTime;
-        prevTime = time; //  Update the time
-        //  Calculate the CPU utilisation (the amount of time not spent waiting)
-        double utilisation = (double)(timeDelta - totalWaitTime) / timeDelta;
-        totalWaitTime = 0; //  Reset the wait time
-        return utilisation;
-    }
-
-    void CPUMonitor::addWait(int time) {
-        totalWaitTime += time;
-    }
-
-
     class SensorManager {
     private:
         int sensorCount;    //  The number of sensors in use
@@ -78,8 +35,6 @@ namespace Sensor {
         ReportCallback reportCallback;  //  The callback function that passes sensor readings back to the program
         SendLEDCommand sendLEDCommand;
 
-        CPUMonitor monitor;     //  The CPU monitor sensor
-
         void diagCheck();
         void faultInject();
         void updateTimes();
@@ -101,7 +56,6 @@ namespace Sensor {
         double getLastReport(int sensorIndex);
         double getLastReport(Sensor* sensor);
 
-        CPUMonitor* getMonitor();
     };
 
     SensorManager::SensorManager(int maxSensors, int rate) {
@@ -126,9 +80,6 @@ namespace Sensor {
 
         spinTime = 0;
         reportCallback = NULL;
-
-        //  Sets the CPU monitor report rate to be the same as the callback rate
-        monitor.setReportRate(callbackRate);
     }
 
     SensorManager::~SensorManager() {
@@ -152,7 +103,6 @@ namespace Sensor {
             nextTicks[i] -= timeDelta;
             nextReports[i] -= timeDelta;
         }
-
         nextCallback -= timeDelta; //  Subtract the elapsed time from the next callback time
         spinTime -= timeDelta; //  Subtract the elapsed time from the spin time
     }
@@ -293,8 +243,7 @@ namespace Sensor {
 
         //  Go through all the sensors
         for (int i = 0; i < sensorCount; i++) {
-            //  If the sensor has a tick rate
-            if (sensors[i]->getTickRate() > 0) {
+            if (sensors[i]->getTickRate() > 0) { //  If the sensor has a tick rate
                 //  Set the min time if it is the first sensor or has a lower next tick time
                 if (!found || nextTicks[i] < minTime) {
                     minTime = nextTicks[i];
@@ -307,9 +256,7 @@ namespace Sensor {
     int SensorManager::timeToNextReport() {
         //  time is 1 sec by default
         if (sensorCount == 0) return 1000;
-
-        //  min time is time to first sensor report
-        int minTime = nextReports[0];
+        int minTime = nextReports[0]; //  min time is time to first sensor report
 
         //  Go through all the other sensors
         for (int i = 1; i < sensorCount; i++) {
@@ -337,11 +284,6 @@ namespace Sensor {
             }
         }
         RAISE("Sensor not found.");
-    }
-
-    CPUMonitor* SensorManager::getMonitor() {
-        //  Returns the CPU monitor sensor
-        return &monitor;
     }
 }
 

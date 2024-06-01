@@ -1,10 +1,9 @@
+// File for reading voltage using a potential divider and the arduino analog 
 
 //  A header guard prevents the file from being included twice
 #ifndef VOLTAGE_H
 #define VOLTAGE_H
-
-//  Include the parent sensor
-#include "sensor.hpp"
+#include "sensor.hpp" //  Include the parent sensor
 
 namespace Sensor {
     class VoltageSensor : public Sensor {
@@ -12,7 +11,6 @@ namespace Sensor {
         uint8_t vin;    //  Voltage input pin
         double gradient;    //  Gradient produced by potential divider, used for calibration
     public:
-
         VoltageSensor(uint8_t pin, double grad);   //  Called when a new sensor object is created
         ~VoltageSensor();  //  Called when a sensor object is destroyed
 
@@ -37,12 +35,9 @@ namespace Sensor {
 
     double VoltageSensor::report() {
         //  Called by the sensor manager whenever a reading should be reported
-
         //  Read from the input pin and calculate the voltage before the potential divider
         double reading = (double)analogRead(vin);
-
-        double voltage = reading * (5.0/1023.0) * gradient;
-
+        double voltage = reading * (5.0/1023.0) * gradient;// 5/1023 -- is the ratio of voltage to bits
         return voltage;
     }
 }
