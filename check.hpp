@@ -12,7 +12,6 @@ private:
 public:
     ErrorLog(int maxMessages = 8);
     ~ErrorLog();
-
     void raise(char* message);
     int getMessageCount();
     char* getMessage(int i);
@@ -20,33 +19,19 @@ public:
 
 ErrorLog::ErrorLog(int maxMessages = 8) {
     max = maxMessages;
-
-    //  Initialises an array to store the messages
-    messages = (char**)malloc(max * sizeof(char*));
-
-    //  No messages have been produced to begin with
-    messageCount = 0;
+    messages = (char**)malloc(max * sizeof(char*)); //  Initialises an array to store the messages
+    messageCount = 0; //  No messages have been produced to begin with
 }
-
 ErrorLog::~ErrorLog() {
-
 }
 
 void ErrorLog::raise(char* message) {
     //  When an error message is produced
-
-    //  Initialise memory to store the message
-    int len = strlen(message);
-    char* m = (char*)malloc((len + 1) * sizeof(char));
-
-    //  Copy the message into memory
-    strcpy(m, message);
-
-    //  Store the message in the array of messages
-    messages[messageCount] = m;
-
-    //  Add one to the message count
-    messageCount++;
+    int len = strlen(message); //  Initialise memory to store the message
+    char* m = (char*)malloc((len + 1) * sizeof(char)); //  Initialise memory to store the message
+    strcpy(m, message); //  Copy the message into memory
+    messages[messageCount] = m; //  Store the message in the array of messages
+    messageCount++; //  Add one to the message count
 }
 
 int ErrorLog::getMessageCount() {
@@ -87,5 +72,4 @@ ErrorLog errorLog;
             while (true) {delay(1000);}                             \
         }                                                           \
     }
-
 #endif
