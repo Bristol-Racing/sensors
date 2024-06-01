@@ -1,3 +1,6 @@
+// Sensor manager is a class 
+// that takes sensor objects, keeps track of report rate and
+// every tick gets each sensor value and outputs to main code
 
 //  A header guard prevents the file from being included twice
 #ifndef SENSOR_MANAGER_H
@@ -64,9 +67,7 @@ namespace Sensor {
 
         int callbackRate;   //  The rate at which the callback function should pass sensor readings back to the program
         int nextCallback;   //  The time for the next callback
-
         unsigned long prevTime; //  The time of the last thing (tick, report, callback)
-
         int spinTime;   //  The time to run the sensor manager for
 
         int diagTimer = 0;
@@ -81,7 +82,6 @@ namespace Sensor {
 
         void diagCheck();
         void faultInject();
-
         void updateTimes();
         void processTicks();
         void processReports();
@@ -153,11 +153,8 @@ namespace Sensor {
             nextReports[i] -= timeDelta;
         }
 
-        //  Subtract the elapsed time from the next callback time
-        nextCallback -= timeDelta;
-
-        //  Subtract the elapsed time from the spin time
-        spinTime -= timeDelta;
+        nextCallback -= timeDelta; //  Subtract the elapsed time from the next callback time
+        spinTime -= timeDelta; //  Subtract the elapsed time from the spin time
     }
 
     void SensorManager::processTicks() {

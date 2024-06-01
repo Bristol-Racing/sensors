@@ -2,7 +2,6 @@
 //  A header guard prevents the file from being included twice
 #ifndef SENSOR_H
 #define SENSOR_H
-
 #include "check.hpp"
 
 namespace Sensor {
@@ -30,7 +29,6 @@ namespace Sensor {
     void Sensor::setTickRate(int newTickRate) {
         CHECK(newTickRate >= 1, "Tick rate must be at least 1 millisecond")
         CHECK(tickRate == -1, "Tick rate already set")
-
         tickRate = newTickRate;
     }
 
@@ -41,7 +39,6 @@ namespace Sensor {
     void Sensor::setReportRate(int newReportRate) {
         CHECK(newReportRate >= 1, "Read rate must be at least 1 millisecond")
         CHECK(reportRate == -1, "Read rate already set")
-
         reportRate = newReportRate;
     }
 

@@ -1,10 +1,9 @@
+// File that takes a temperature reading from an analog read and applies calibration
 
 //  A header guard prevents the file from being included twice
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H
-
-//  Include the parent sensor
-#include "sensor.hpp"
+#include "sensor.hpp"//  Include the parent sensor
 
 //  Values from calibration
 #define MINTEMP 15.0
@@ -17,11 +16,9 @@ namespace Sensor {
     class TemperatureSensor : public Sensor {
     private:
         uint8_t vin;    //  Voltage input pin
-
     public:
         TemperatureSensor(uint8_t pin);   //  Called when a new sensor object is created
         ~TemperatureSensor();  //  Called when a sensor object is destroyed
-
         void tick();        //  Both called by the sensor manager
         double report();
     };
@@ -33,23 +30,20 @@ namespace Sensor {
     }
 
     TemperatureSensor::~TemperatureSensor() {
-        //  Don't need to do anything when the object is destroyed
+        //  Do nothing when the object is destroyed
     }
 
     void TemperatureSensor::tick() {
-        //  We don't bother averaging
+        //  No averaging applied
     }
 
     double TemperatureSensor::report() {
-        //  Called by the sensor manager whenever a reading should be reported
+        // Takes an analog voltage reading, applies a calibration and returns the temperature
 
-        //  Read from the voltage input and convert it to a voltage (in millivolts)
-        int reading = analogRead(vin);
+        //  Called by the sensor manager when a reading should be reported
+        int reading = analogRead(vin); //  Read from the voltage input and convert it to a voltage (in millivolts)
         double voltage = (5000.0 / 1023.0) * (double)reading;
-
-        //  Calculate the temperature from the calibration values
-        double temperature = (voltage - MINMV) / TEMP_GRADIENT + MINTEMP;
-
+        double temperature = (voltage - MINMV) / TEMP_GRADIENT + MINTEMP;//  Calculate the temperature from the calibration values
         return temperature;
     }
 }
