@@ -49,7 +49,7 @@ namespace Sensor {
         //Serial.println(reading);
 
 
-        double output = reading ? 1.0 : 0.0; //change boolean to double
+        double output = reading ? 0.0 : 1.0; //change boolean to double (POTENTIAL BUG? pin using pull-up resistor and flipped reading)
         //Serial.println(output);
         return output;
     }

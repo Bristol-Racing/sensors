@@ -95,7 +95,7 @@ namespace Sensor {
         // Ben trying something
         //double voltage = (3.3 / 1023.0) * (double) average;
         //voltage = voltage - (3.3 * 0.5) + 0.007;
-        double voltage = -average;
+        double voltage = average;
         double current = (voltage);
 
         //  Calculate the current

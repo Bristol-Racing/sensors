@@ -45,6 +45,7 @@ namespace Sensor {
 
         //  Set start time
         start = rtc.now();
+        //double inittime = start.unixtime();
     }
 
     void Clock::tick() {
@@ -56,11 +57,17 @@ namespace Sensor {
 
         //  Check current time
         DateTime now = rtc.now();
+        //Serial.println("getting clock time");
 
         //  Calculate time since start
-        TimeSpan span = now - start;
+        //TimeSpan span = now - start;
+        uint32_t unixNow = now.unixtime();
+        uint32_t relTime = 1704067200; // unixtime of 01/01/2024 00:00:00
+        double relUnixNow = unixNow - relTime; // time in seconds relative to 01/01/2024 00:00:00
+        //double unixnow = now.unixtime();
+        //Serial.println(start);
 
-        return span.totalseconds();
+        return relUnixNow;
 
     }
 }
