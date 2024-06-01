@@ -105,6 +105,8 @@ namespace Sensor {
         ~SensorManager();
 
         void setReportCallback(ReportCallback callback);
+        void setSendLEDCommand(SendLEDCommand command);
+
 
         void addSensor(Sensor* sensor);
         void spin(int maxTime = -1);
@@ -199,14 +201,16 @@ namespace Sensor {
         }
     }
 
-
+    void SensorManager::setSendLEDCommand(SendLEDCommand command) {
+        sendLEDCommand = command;
+    }
 
     void SensorManager::processCallbacks() {
         //  If the next callback time has elapsed
         if (nextCallback <= 0) {
+            sendLEDCommand(1,0);
             //  reset the next callback time
             nextCallback = callbackRate;
-
             diagCheck();
 
 
@@ -215,6 +219,9 @@ namespace Sensor {
             //  to pass the readings back to the main program
             if (diagMode) {
                 faultInject();
+                sendLEDCommand(1,2);
+            } else {
+                sendLEDCommand(1,1);
             }
             reportCallback(readings);
         }
@@ -226,12 +233,14 @@ namespace Sensor {
 
             if (butOn >= 0.5) {
                 diagTimer++;
+                sendLEDCommand(3,1);
             } else {
                 diagTimer = 0;
+                sendLEDCommand(3,0);
             }
 
 
-            if (diagTimer >= 5) {
+            if (diagTimer >= 15) {
                 diagMode = diagMode ? 0 : 1;
                 faultMode = 2;
                 diagTimer = 0;
@@ -244,7 +253,7 @@ namespace Sensor {
         //Serial.println(faultTimer);
         //Serial.println(faultMode);
 
-        readings[faultMode] = 666.6; // Inject a fault value of 666.6
+        readings[faultMode] = 999; // Inject a fault value of 999
         faultTimer++;
         if (faultTimer >= 5) {
             if (faultMode >= sensorCount-1) {
@@ -276,7 +285,6 @@ namespace Sensor {
     void SensorManager::spin(int maxTime = -1) {
         //  Updates the next everything times
         updateTimes();
-
         //  Sets the spin time to the max time passed in to the spin function
         //  spin time is ignored if -1 is passed in
         spinTime = maxTime;
