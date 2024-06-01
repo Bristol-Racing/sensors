@@ -8,12 +8,11 @@
 namespace Sensor {
     class VoltageSensor : public Sensor {
     private:
-        uint8_t vin;    //  Voltage input pin
+        uint8_t vin;        //  Voltage input pin
         double gradient;    //  Gradient produced by potential divider, used for calibration
     public:
         VoltageSensor(uint8_t pin, double grad);   //  Called when a new sensor object is created
-        ~VoltageSensor();  //  Called when a sensor object is destroyed
-
+        ~VoltageSensor();   //  Called when a sensor object is destroyed
         void tick();        //  Both called by the sensor manager
         double report();
     };

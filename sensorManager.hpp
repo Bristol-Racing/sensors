@@ -25,7 +25,7 @@ namespace Sensor {
         int callbackRate;   //  The rate at which the callback function should pass sensor readings back to the program
         int nextCallback;   //  The time for the next callback
         unsigned long prevTime; //  The time of the last thing (tick, report, callback)
-        int spinTime;   //  The time to run the sensor manager for
+        int spinTime;       //  The time to run the sensor manager for
 
         int diagTimer = 0;
         bool diagMode = 0;
