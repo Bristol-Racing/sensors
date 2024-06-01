@@ -47,14 +47,11 @@ namespace Sensor {
         //  Called by the sensor manager whenever a new reading needs adding to the average
 
         //  Compares pins 0 and 1 during the reading
-        //  Pin 0 should be the current sensor reference voltage
-        //  Pin 1 should be the current sensor output voltage
-        //  The readings aren't accurate enough if the ADC isn't used in differential mode
         int16_t ref_reading;
         int16_t out_reading;
-        ref_reading = analogRead(Vref);
-        out_reading = analogRead(Vout);
-        int16_t diff_reading = out_reading - ref_reading;
+        ref_reading = analogRead(Vref); //  Pin 0 should be the current sensor reference voltage
+        out_reading = analogRead(Vout); //  Pin 1 should be the current sensor output voltage
+        int16_t diff_reading = out_reading - ref_reading; //  The readings aren't accurate enough if the ADC isn't used in differential mode
         totalReading += diff_reading; //  Adds the reading to the running total
         readings++;
     }
