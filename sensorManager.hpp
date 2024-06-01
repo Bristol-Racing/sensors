@@ -34,9 +34,13 @@ namespace Sensor {
 
         ReportCallback reportCallback;  //  The callback function that passes sensor readings back to the program
         SendLEDCommand sendLEDCommand;
+        SendLEDCommand sendLEDCommand;
 
+
+        void tempCheck(double*);
         void diagCheck();
         void faultInject();
+
         void updateTimes();
         void processTicks();
         void processReports();
@@ -47,6 +51,7 @@ namespace Sensor {
         ~SensorManager();
 
         void setReportCallback(ReportCallback callback);
+        void setSendLEDCommand(SendLEDCommand command);
 
         void addSensor(Sensor* sensor);
         void spin(int maxTime = -1);
@@ -57,6 +62,7 @@ namespace Sensor {
         double getLastReport(Sensor* sensor);
 
     };
+
 
     SensorManager::SensorManager(int maxSensors, int rate) {
         //  Sensor count starts at 0
@@ -81,6 +87,7 @@ namespace Sensor {
         spinTime = 0;
         reportCallback = NULL;
     }
+
 
     SensorManager::~SensorManager() {
         //  Free the memory for the arrays when the sensor manager is destroyed
@@ -135,32 +142,53 @@ namespace Sensor {
 
 
 
+
+
     void SensorManager::processCallbacks() {
         //  If the next callback time has elapsed
         if (nextCallback <= 0) {
             //  reset the next callback time
             nextCallback = callbackRate;
+            tempCheck(readings);
             diagCheck();
+
+
+
             //  And call the callback function with the array of sensor readings
             //  to pass the readings back to the main program
             if (diagMode) {
                 faultInject();
+                sendLEDCommand(1,2);
+            } else {
+                sendLEDCommand(1,1);
             }
             reportCallback(readings);
+            delay(50);
+            sendLEDCommand(1,0);
+        }
+    }
+
+    void SensorManager::tempCheck(double* readings) {
+        double motTemp = readings[4];
+        if (motTemp < 60.0) {
+            sendLEDCommand(2,1);
+        } else if (motTemp < 90.0) {
+            sendLEDCommand(2,2);
+        } else {
+            sendLEDCommand(2,3);
         }
     }
 
     void SensorManager::diagCheck() {
-
             double butOn = sensors[1]->report();
-
             if (butOn >= 0.5) {
                 diagTimer++;
+                sendLEDCommand(3,1);
             } else {
                 diagTimer = 0;
+                sendLEDCommand(3,0);
             }
-
-            if (diagTimer >= 5) {
+            if (diagTimer >= 10) {
                 diagMode = diagMode ? 0 : 1;
                 faultMode = 2;
                 diagTimer = 0;
@@ -169,7 +197,7 @@ namespace Sensor {
     }
 
     void SensorManager::faultInject() {
-        readings[faultMode] = 666.6; // Inject a fault value of 666.6
+        readings[faultMode] = 999; // Inject a fault value of 666.6
         faultTimer++;
         if (faultTimer >= 5) {
             if (faultMode >= sensorCount-1) {
@@ -184,6 +212,10 @@ namespace Sensor {
     void SensorManager::setReportCallback(ReportCallback callback) {
         CHECK(reportCallback == NULL, "Report callback already set")
         reportCallback = callback;
+    }
+
+    void SensorManager::setSendLEDCommand(SendLEDCommand command) {
+        sendLEDCommand = command;
     }
 
     void SensorManager::addSensor(Sensor* sensor) {
@@ -234,6 +266,7 @@ namespace Sensor {
             processReports();
             processCallbacks();
         }
+
 
     }
 
@@ -288,3 +321,4 @@ namespace Sensor {
 }
 
 #endif
+

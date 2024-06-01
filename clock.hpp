@@ -1,18 +1,12 @@
 //  A header guard prevents the file from being included twice
 #ifndef CLOCK_H
 #define CLOCK_H
-
-//  Include the parent sensor
-#include "sensor.hpp"
-
-//  Include the clock library
-#include <Wire.h>
+#include "sensor.hpp"//  Include the parent sensor
+#include <Wire.h>//  Include the clock library
 #include "RTClib.h"
 
 namespace Sensor {
-
     class Clock : public Sensor {
-
     private:
         RTC_DS3231 rtc; //  The real time clock object
         DateTime start; //  The time the clock was turned on
@@ -20,9 +14,7 @@ namespace Sensor {
     public:
         Clock();    //  Called when a new sensor object is created
         ~Clock();   //  Called when a sensor object is destroyed
-
         void setup();   //  Connects to the RTC chip and sets it up
-
         void tick();    //  Both called by the sensor manager
         double report();
     };
@@ -39,12 +31,7 @@ namespace Sensor {
         //  Connect to the RTC chip and check it initialized correctly
         bool rtcStatus = rtc.begin();
         CHECK(rtcStatus == true, "RTC initialization failed");
-
-        //  Ignore lost power error
-        // CHECK(rtc.lostPower() == false, "RTC lost power. Needs resetting");
-
-        //  Set start time
-        start = rtc.now();
+        start = rtc.now(); //  Set start time
     }
 
     void Clock::tick() {
@@ -53,14 +40,11 @@ namespace Sensor {
 
     double Clock::report() {
         //  Called by the sensor manager whenever the time should be reported
-
-        //  Check current time
-        DateTime now = rtc.now();
-
-        //  Calculate time since start
-        TimeSpan span = now - start;
-
-        return span.totalseconds();
+        DateTime now = rtc.now();           //  Check current time
+        uint32_t unixNow = now.unixtime();  //  Calculate time since start
+        uint32_t relTime = 1704067200;      // unixtime of 01/01/2024 00:00:00
+        double relUnixNow = unixNow - relTime; // time in seconds relative to 01/01/2024 00:00:00
+        return relUnixNow;
 
     }
 }
