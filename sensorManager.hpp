@@ -2,7 +2,6 @@
 //  A header guard prevents the file from being included twice
 #ifndef SENSOR_MANAGER_H
 #define SENSOR_MANAGER_H
-
 #include "sensor.hpp"
 
 namespace Sensor {
@@ -18,19 +17,14 @@ namespace Sensor {
     public:
         CPUMonitor();   //  Called when a new sensor object is created
         ~CPUMonitor();  //  Called when a sensor object is destroyed
-
         void tick();        //  Both called by the sensor manager
         double report();
-
         void addWait(int time); //  Adds wait time, for CPU usage calcs
     };
 
     CPUMonitor::CPUMonitor() {
-        //  Resets the wait time
-        totalWaitTime = 0;
-
-        //  Stores the current time
-        prevTime = millis();
+        totalWaitTime = 0; //  Resets the wait time
+        prevTime = millis(); //  Stores the current time
     }
 
     CPUMonitor::~CPUMonitor() {
@@ -43,20 +37,13 @@ namespace Sensor {
 
     double CPUMonitor::report() {
         //  Called by the sensor manager whenever CPU usage should be reported
-
         //  Calculate the time since the last report
         unsigned long time = millis();
         long timeDelta = time - prevTime;
-
-        //  Update the time
-        prevTime = time;
-
+        prevTime = time; //  Update the time
         //  Calculate the CPU utilisation (the amount of time not spent waiting)
         double utilisation = (double)(timeDelta - totalWaitTime) / timeDelta;
-
-        //  Reset the wait time
-        totalWaitTime = 0;
-
+        totalWaitTime = 0; //  Reset the wait time
         return utilisation;
     }
 
@@ -180,7 +167,7 @@ namespace Sensor {
             if (nextTicks[i] <= 0) {
                 //  Call the tick method
                 sensors[i]->tick();
-                //  And reset the next tick time
+                //  Reset the next tick time
                 nextTicks[i] = sensors[i]->getTickRate();
             }
         }
@@ -206,11 +193,7 @@ namespace Sensor {
         if (nextCallback <= 0) {
             //  reset the next callback time
             nextCallback = callbackRate;
-
             diagCheck();
-
-
-
             //  And call the callback function with the array of sensor readings
             //  to pass the readings back to the main program
             if (diagMode) {
@@ -230,7 +213,6 @@ namespace Sensor {
                 diagTimer = 0;
             }
 
-
             if (diagTimer >= 5) {
                 diagMode = diagMode ? 0 : 1;
                 faultMode = 2;
@@ -240,10 +222,6 @@ namespace Sensor {
     }
 
     void SensorManager::faultInject() {
-
-        //Serial.println(faultTimer);
-        //Serial.println(faultMode);
-
         readings[faultMode] = 666.6; // Inject a fault value of 666.6
         faultTimer++;
         if (faultTimer >= 5) {
@@ -258,7 +236,6 @@ namespace Sensor {
 
     void SensorManager::setReportCallback(ReportCallback callback) {
         CHECK(reportCallback == NULL, "Report callback already set")
-
         reportCallback = callback;
     }
 
@@ -269,8 +246,7 @@ namespace Sensor {
         nextTicks[sensorCount] = sensor->getTickRate();
         nextReports[sensorCount] = sensor->getReportRate();
 
-        //  Increments the sensor count
-        sensorCount++;
+        sensorCount++; //  Increments the sensor count
     }
 
     void SensorManager::spin(int maxTime = -1) {
@@ -281,13 +257,12 @@ namespace Sensor {
         //  spin time is ignored if -1 is passed in
         spinTime = maxTime;
 
-        //  Repeats as long as there is spin time remaining
-        //  or max time is -1
+        //  Repeats as long as there is spin time remaining or max time is -1
         while (spinTime > 0 || maxTime == -1) {
             //  Finds the minimum time to the next tick/report/callback
             int minTime = timeToNextTick();
-
             int nextReport = timeToNextReport();
+
             if (nextReport < minTime) {
                 minTime = nextReport;
             }
@@ -302,14 +277,9 @@ namespace Sensor {
 
             //  If the minimum time is greater than 0
             if (minTime >= 1) {
-                //  wait
-                delay(minTime);
-
-                //  Register the wait with the CPU monitor
-                monitor.addWait(minTime);
-
-                //  Update the next everything times
-                updateTimes();
+                delay(minTime); //  wait
+                monitor.addWait(minTime); //  Register the wait with the CPU monitor
+                updateTimes(); //  Update the next everything times
             }
 
             //  Process any ticks, reports, and callbacks that have happened
@@ -321,11 +291,8 @@ namespace Sensor {
     }
 
     int SensorManager::timeToNextTick() {
-        //  time is 1 sec by default
-        int minTime = 1000;
-
-        //  Always set min time if this is the first sensor
-        bool found = false;
+        int minTime = 1000; //  time is 1 sec by default
+        bool found = false; //  Always set min time if this is the first sensor
 
         //  Go through all the sensors
         for (int i = 0; i < sensorCount; i++) {
@@ -337,7 +304,6 @@ namespace Sensor {
                 }
             }
         }
-
         return minTime;
     }
 
@@ -358,7 +324,6 @@ namespace Sensor {
                 }
             }
         }
-
         return minTime;
     }
 
