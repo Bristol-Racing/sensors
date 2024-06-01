@@ -92,6 +92,7 @@ namespace Sensor {
 
         CPUMonitor monitor;     //  The CPU monitor sensor
 
+        void tempCheck(double*);
         void diagCheck();
         void faultInject();
 
@@ -106,7 +107,6 @@ namespace Sensor {
 
         void setReportCallback(ReportCallback callback);
         void setSendLEDCommand(SendLEDCommand command);
-
 
         void addSensor(Sensor* sensor);
         void spin(int maxTime = -1);
@@ -201,16 +201,14 @@ namespace Sensor {
         }
     }
 
-    void SensorManager::setSendLEDCommand(SendLEDCommand command) {
-        sendLEDCommand = command;
-    }
+
 
     void SensorManager::processCallbacks() {
         //  If the next callback time has elapsed
         if (nextCallback <= 0) {
-            sendLEDCommand(1,0);
             //  reset the next callback time
             nextCallback = callbackRate;
+            tempCheck(readings);
             diagCheck();
 
 
@@ -224,6 +222,19 @@ namespace Sensor {
                 sendLEDCommand(1,1);
             }
             reportCallback(readings);
+            delay(50);
+            sendLEDCommand(1,0);
+        }
+    }
+
+    void SensorManager::tempCheck(double* readings) {
+        double motTemp = readings[4];
+        if (motTemp < 60.0) {
+            sendLEDCommand(2,1);
+        } else if (motTemp < 90.0) {
+            sendLEDCommand(2,2);
+        } else {
+            sendLEDCommand(2,3);
         }
     }
 
@@ -240,7 +251,7 @@ namespace Sensor {
             }
 
 
-            if (diagTimer >= 15) {
+            if (diagTimer >= 10) {
                 diagMode = diagMode ? 0 : 1;
                 faultMode = 2;
                 diagTimer = 0;
@@ -253,7 +264,7 @@ namespace Sensor {
         //Serial.println(faultTimer);
         //Serial.println(faultMode);
 
-        readings[faultMode] = 999; // Inject a fault value of 999
+        readings[faultMode] = 999; // Inject a fault value of 666.6
         faultTimer++;
         if (faultTimer >= 5) {
             if (faultMode >= sensorCount-1) {
@@ -271,6 +282,10 @@ namespace Sensor {
         reportCallback = callback;
     }
 
+    void SensorManager::setSendLEDCommand(SendLEDCommand command) {
+        sendLEDCommand = command;
+    }
+
     void SensorManager::addSensor(Sensor* sensor) {
         //  Adds the sensor to the sensors array
         sensors[sensorCount] = sensor;
@@ -285,6 +300,7 @@ namespace Sensor {
     void SensorManager::spin(int maxTime = -1) {
         //  Updates the next everything times
         updateTimes();
+
         //  Sets the spin time to the max time passed in to the spin function
         //  spin time is ignored if -1 is passed in
         spinTime = maxTime;
