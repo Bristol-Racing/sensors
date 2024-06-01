@@ -10,10 +10,9 @@ namespace Sensor {
     private:
         RTC_DS3231 rtc; //  The real time clock object
         DateTime start; //  The time the clock was turned on
-
     public:
-        Clock();    //  Called when a new sensor object is created
-        ~Clock();   //  Called when a sensor object is destroyed
+        Clock();        //  Called when a new sensor object is created
+        ~Clock();       //  Called when a sensor object is destroyed
         void setup();   //  Connects to the RTC chip and sets it up
         void tick();    //  Both called by the sensor manager
         double report();
@@ -45,7 +44,6 @@ namespace Sensor {
         uint32_t relTime = 1704067200;      // unixtime of 01/01/2024 00:00:00
         double relUnixNow = unixNow - relTime; // time in seconds relative to 01/01/2024 00:00:00
         return relUnixNow;
-
     }
 }
 

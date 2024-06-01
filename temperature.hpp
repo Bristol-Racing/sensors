@@ -39,7 +39,6 @@ namespace Sensor {
 
     double TemperatureSensor::report() {
         // Takes an analog voltage reading, applies a calibration and returns the temperature
-
         //  Called by the sensor manager when a reading should be reported
         int reading = analogRead(vin); //  Read from the voltage input and convert it to a voltage (in millivolts)
         double voltage = (5000.0 / 1023.0) * (double)reading;

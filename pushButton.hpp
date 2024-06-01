@@ -1,6 +1,5 @@
 #ifndef PUSHBUTTON_H
 #define PUSHBUTTON_H
-
 #include <Arduino.h>
 #include "sensor.hpp"
 
@@ -17,7 +16,6 @@ namespace Sensor {
     public:
         PushButton(uint8_t pin, unsigned long debounceTime = 50);  // Constructor
         ~PushButton();  // Destructor
-
         void setup();
         void tick();   // Sets up the button pin
         double report();    // Reads the button state with debounce logic
@@ -43,14 +41,9 @@ namespace Sensor {
         // No averaging needed for push button
     }
 
-
     double PushButton::report() {
         bool reading = digitalRead(buttonPin); // read pit confirm HIGH/LOW state
-        //Serial.println(reading);
-
-
         double output = reading ? 1.0 : 0.0; //change boolean to double
-        //Serial.println(output);
         return output;
     }
 }
