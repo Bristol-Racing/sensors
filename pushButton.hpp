@@ -2,15 +2,13 @@
 
 #ifndef PUSHBUTTON_H
 #define PUSHBUTTON_H
-#include <Arduino.h>
+//#include <Arduino.h> check if this line is required---------------
 #include "sensor.hpp"
 
 namespace Sensor {
     class PushButton : public Sensor{
-
     private:
         uint8_t buttonPin;     // Pin number where the button is connected
-
     public:
         PushButton(uint8_t pin);  // Constructor
         ~PushButton();      // Destructor

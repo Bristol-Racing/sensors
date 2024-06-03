@@ -2,8 +2,7 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 #include "sensor.hpp"//  Include the parent sensor
-#include <Wire.h>//  Include the clock library
-#include "RTClib.h"
+#include "RTClib.h"//  Include the clock library
 
 namespace Sensor {
     class Clock : public Sensor {

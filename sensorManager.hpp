@@ -130,10 +130,6 @@ namespace Sensor {
         }
     }
 
-
-
-
-
     void SensorManager::processCallbacks() {
         //  If the next callback time has elapsed
         if (nextCallback <= 0) {
